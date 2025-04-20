@@ -1,8 +1,20 @@
 import javax.swing.*;
+
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+
+import org.bson.Document;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.FocusAdapter;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.FocusEvent;
 
 public class App {
 
@@ -75,6 +87,30 @@ public class App {
         JTextField idField = new JTextField("Enter your Voter ID");
         idField.setPreferredSize(textFieldSize);
         idField.setMaximumSize(textFieldSize);
+        idField.setForeground(Color.LIGHT_GRAY);
+        idField.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        idField.setEditable(false);
+        idField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (!idField.isEditable()) {
+                    idField.setText("");
+                    idField.setEditable(true);
+                    idField.setForeground(Color.BLACK);
+                    idField.requestFocus();
+                }
+            }
+        });
+        idField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (idField.getText().trim().isEmpty()) {
+                    idField.setText("Enter your Voter ID");
+                    idField.setForeground(Color.LIGHT_GRAY);
+                    idField.setEditable(false);
+                }
+            }            
+        });
 
         // REGISTRATION PIN INPUT
         JPanel pinPanel = createVerticalPanel();
@@ -85,6 +121,30 @@ public class App {
         JTextField pinField = new JTextField("Enter your Registration PIN");
         pinField.setPreferredSize(textFieldSize);
         pinField.setMaximumSize(textFieldSize);
+        pinField.setForeground(Color.LIGHT_GRAY);
+        pinField.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        pinField.setEditable(false);
+        pinField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (!pinField.isEditable()) {
+                    pinField.setText("");
+                    pinField.setEditable(true);
+                    pinField.setForeground(Color.BLACK);
+                    pinField.requestFocus();
+                }
+            }
+        });
+        pinField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (pinField.getText().trim().isEmpty()) {
+                    pinField.setText("Enter your Registration PIN");
+                    pinField.setForeground(Color.LIGHT_GRAY);
+                    pinField.setEditable(false);
+                }
+            }            
+        });
 
         // add components to id panel
         idPanel.add(idLabel);
@@ -130,6 +190,51 @@ public class App {
             comboBox.setMaximumSize(new Dimension(300, 30));
             dropdowns[i] = comboBox;
 
+
+            // grays out already selected candidates
+            comboBox.setRenderer(new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                    JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                    String val = (String) value;
+
+                    // gray out if already selected
+                    boolean isAlreadyChosen = false;
+                    for (JComboBox<String> otherBox : dropdowns) {
+                        if (otherBox != comboBox && val != null && val.equals(otherBox.getSelectedItem())) {
+                            isAlreadyChosen = true;
+                            break;
+                        }
+                    }
+
+                    if (isAlreadyChosen && index > 0) {
+                        label.setForeground(Color.LIGHT_GRAY);
+                    } else {
+                        label.setForeground(Color.BLACK);
+                    }
+                    return label;
+                }
+            });
+
+            // disables
+            comboBox.addActionListener (e -> {
+                String selected = (String) comboBox.getSelectedItem();
+
+                if (selected != null) {
+                    for (JComboBox<String> otherBox : dropdowns) {
+                        if (otherBox != comboBox && selected.equals(otherBox.getSelectedItem())) {
+                            SwingUtilities.invokeLater(() -> comboBox.setSelectedIndex(0));
+                            break;
+                        } 
+                    }
+                }
+                for (JComboBox<String> box : dropdowns) {
+                    box.repaint();
+                }
+            });
+
+
+
             rowPanel.add(choiceLabel);
             rowPanel.add(comboBox);
             rowPanel.add(Box.createHorizontalStrut(10));
@@ -143,9 +248,76 @@ public class App {
         submitVoteButton.setBackground(maroon);
         submitVoteButton.setForeground(white);
 
+            submitVoteButton.addActionListener(e -> {
+            String id = idField.getText().trim();
+            String pin = pinField.getText().trim();
+
+
+            if (id.isEmpty() || pin.isEmpty() || id.equals("Enter your Voter ID") || pin.equals("Enter your Registration PIN")) {
+                JOptionPane.showMessageDialog(panel, "Please enter a valid Voter ID and PIN");
+                return;
+            }
+
+
+            String first = (String) dropdowns[0].getSelectedItem();
+            String second = (String) dropdowns[1].getSelectedItem();
+            String third = (String) dropdowns[2].getSelectedItem();
+
+
+            if (first.startsWith("Select") || second.startsWith("Select") || third.startsWith("Select")) {
+                JOptionPane.showMessageDialog(panel, "Please select your top three choices");
+                return;
+            }
+
+
+            String uri = "mongodb+srv://sophiadronova:csce310team11@cluster0.btrged1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+            try (MongoClient mongoClient = MongoClients.create(uri)) {
+                MongoDatabase db = mongoClient.getDatabase("votingdb");
+                MongoCollection<Document> votes = db.getCollection("votes");
+
+
+                // check if voter has already voted with this id and pin
+                Document existingVote = votes.find(new Document("id", id)).first();
+
+
+                // if vote does exist, show message
+                if (existingVote != null) {
+                    JOptionPane.showMessageDialog(panel, "You have already voted");
+                    return;
+                }
+
+
+                // otherwise, insert vote into db
+                Document vote = new Document("id", id).append("pin", pin).append("firstChoice", first).append("secondChoice", second).append("thirdChoice", third);
+                votes.insertOne(vote);
+
+
+                JOptionPane.showMessageDialog(panel, "Your vote has been recorded!");
+       
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panel, "Database error: " + ex.getMessage());
+            }            
+        });
+
+
         JButton startOverButton = new JButton("Start Over");
         startOverButton.setBackground(white);
         startOverButton.setForeground(maroon);
+        startOverButton.addActionListener(e -> {
+            pinField.setText("Enter your Registration PIN");
+            pinField.setForeground(Color.LIGHT_GRAY);
+            pinField.setEditable(false);
+
+            idField.setText("Enter your Voter ID");
+            idField.setForeground(Color.LIGHT_GRAY);
+            idField.setEditable(false);
+
+            for (JComboBox<String> box : dropdowns) {
+                box.setSelectedIndex(0);
+                box.repaint();
+            }
+        });
+
 
         buttonsPanel.add(submitVoteButton);
         buttonsPanel.add(Box.createHorizontalStrut(15));

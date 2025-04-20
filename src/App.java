@@ -33,7 +33,7 @@ public class App {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = createVerticalPanel();
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
 
         // TITLE
@@ -44,7 +44,22 @@ public class App {
         titlePanel.add(titleLabel);
         
         panel.add(titlePanel);
-        panel.add(Box.createVerticalStrut(15));
+        // panel.add(Box.createVerticalStrut(15));
+
+        // INSTRUCTIONS
+        JPanel instructionsPanel = createVerticalPanel();
+        JTextArea instructions = new JTextArea("Please enter your Voter ID and registration PIN. These are found on the card that you were given by your local election agent.");
+        instructions.setFont(new Font("Arial", Font.PLAIN, 12));
+        instructions.setWrapStyleWord(true);
+        instructions.setLineWrap(true);
+        instructions.setEditable(false);
+        instructions.setMaximumSize(new Dimension(600, 60));
+        instructions.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        instructionsPanel.add(instructions);
+        instructionsPanel.add(Box.createVerticalStrut(15));
+        panel.add(instructionsPanel);
+
 
         // INPUTTING INFORMATION
         JPanel inputPanel = createHorizontalPanel();
@@ -137,6 +152,21 @@ public class App {
         buttonsPanel.add(startOverButton);
 
         panel.add(buttonsPanel);
+
+
+        // SUMMARY
+        JPanel summaryPanel = createVerticalPanel();
+        JTextArea summary = new JTextArea("After submitting your vote, please collect your ballot from the printer on your right and ensure that your ranked choices match your selections. After inspection, hand the printed ballot to the local election agent. Thank you for voting.");
+        summary.setFont(new Font("Arial", Font.PLAIN, 12));
+        summary.setWrapStyleWord(true);
+        summary.setLineWrap(true);
+        summary.setEditable(false);
+        summary.setMaximumSize(new Dimension(600, 60));
+        summary.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        summaryPanel.add(summary);
+        summaryPanel.add(Box.createVerticalStrut(15));
+        panel.add(summaryPanel);
 
         frame.add(panel);
         frame.setVisible(true);

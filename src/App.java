@@ -24,6 +24,7 @@ public class App {
 
     public static void main(String[] args) {
         Color maroon = new Color(128, 0, 0);
+        Color white = Color.WHITE;
 
 
         JFrame frame = new JFrame("Voting Form");
@@ -81,6 +82,20 @@ public class App {
 
         // add input panel to main panel
         panel.add(inputPanel);
+
+        JPanel buttonsPanel = createHorizontalPanel();
+        JButton submitVoteButton = new JButton("Submit Vote");
+        JButton startOverButton = new JButton("Start Over");
+
+        submitVoteButton.setBackground(Color.red);
+        submitVoteButton.setForeground(white);
+        startOverButton.setBackground(white);
+        startOverButton.setForeground(maroon);
+
+        buttonsPanel.add(submitVoteButton);
+        buttonsPanel.add(startOverButton);
+
+        panel.add(buttonsPanel);
 
         frame.add(panel);
         frame.setVisible(true);

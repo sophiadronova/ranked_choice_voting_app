@@ -182,6 +182,51 @@ public class App {
             comboBox.setMaximumSize(new Dimension(300, 30));
             dropdowns[i] = comboBox;
 
+
+            // grays out already selected candidates
+            comboBox.setRenderer(new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                    JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                    String val = (String) value;
+
+                    // gray out if already selected
+                    boolean isAlreadyChosen = false;
+                    for (JComboBox<String> otherBox : dropdowns) {
+                        if (otherBox != comboBox && val != null && val.equals(otherBox.getSelectedItem())) {
+                            isAlreadyChosen = true;
+                            break;
+                        }
+                    }
+
+                    if (isAlreadyChosen && index > 0) {
+                        label.setForeground(Color.LIGHT_GRAY);
+                    } else {
+                        label.setForeground(Color.BLACK);
+                    }
+                    return label;
+                }
+            });
+
+            // disables
+            comboBox.addActionListener (e -> {
+                String selected = (String) comboBox.getSelectedItem();
+
+                if (selected != null) {
+                    for (JComboBox<String> otherBox : dropdowns) {
+                        if (otherBox != comboBox && selected.equals(otherBox.getSelectedItem())) {
+                            SwingUtilities.invokeLater(() -> comboBox.setSelectedIndex(0));
+                            break;
+                        } 
+                    }
+                }
+                for (JComboBox<String> box : dropdowns) {
+                    box.repaint();
+                }
+            });
+
+
+
             rowPanel.add(choiceLabel);
             rowPanel.add(comboBox);
             rowPanel.add(Box.createHorizontalStrut(10));

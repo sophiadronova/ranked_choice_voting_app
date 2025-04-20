@@ -83,12 +83,48 @@ public class App {
         // add input panel to main panel
         panel.add(inputPanel);
 
+        // DROP DOWN PART
+        String[] candidates = {
+            "William Henry Harrison",
+            "Taylor Swift",
+            "Abraham Lincoln",
+            "Mr. Bean",
+            "George Washington"
+        };
+
+        String[] choices = {"1st Choice", "2nd Choice", "3rd Choice"};
+
+        JComboBox<String>[] dropdowns = new JComboBox[3];
+        for (int i = 0; i < 3; i++) {
+            JPanel rowPanel = createHorizontalPanel();
+
+            JLabel choiceLabel = new JLabel(choices[i] + ": ");
+            choiceLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+            choiceLabel.setForeground(maroon);
+
+            String[] initialOption = new String[candidates.length + 1];
+            initialOption[0] = "Select Candidate for " + choices[i];
+            System.arraycopy(candidates, 0, initialOption, 1, candidates.length);
+
+            JComboBox<String> comboBox = new JComboBox<>(initialOption);
+            comboBox.setBackground(white);
+            comboBox.setPreferredSize(new Dimension(300, 30));
+            comboBox.setMaximumSize(new Dimension(300, 30));
+            dropdowns[i] = comboBox;
+
+            rowPanel.add(choiceLabel);
+            rowPanel.add(comboBox);
+            panel.add(rowPanel);
+        }
+
+
+        // BUTTONS
         JPanel buttonsPanel = createHorizontalPanel();
         JButton submitVoteButton = new JButton("Submit Vote");
-        JButton startOverButton = new JButton("Start Over");
-
-        submitVoteButton.setBackground(Color.red);
+        submitVoteButton.setBackground(maroon);
         submitVoteButton.setForeground(white);
+
+        JButton startOverButton = new JButton("Start Over");
         startOverButton.setBackground(white);
         startOverButton.setForeground(maroon);
 

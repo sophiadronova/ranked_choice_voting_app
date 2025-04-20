@@ -1,4 +1,12 @@
 import javax.swing.*;
+
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+
+import org.bson.Document;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -239,6 +247,56 @@ public class App {
         JButton submitVoteButton = new JButton("Submit Vote");
         submitVoteButton.setBackground(maroon);
         submitVoteButton.setForeground(white);
+
+            submitVoteButton.addActionListener(e -> {
+            String id = idField.getText().trim();
+            String pin = pinField.getText().trim();
+
+
+            if (id.isEmpty() || pin.isEmpty() || id.equals("Enter your Voter ID") || pin.equals("Enter your Registration PIN")) {
+                JOptionPane.showMessageDialog(panel, "Please enter a valid Voter ID and PIN");
+            }
+
+
+            String first = (String) dropdowns[0].getSelectedItem();
+            String second = (String) dropdowns[1].getSelectedItem();
+            String third = (String) dropdowns[2].getSelectedItem();
+
+
+            if (first.startsWith("Select") || second.startsWith("Select") || third.startsWith("Select")) {
+                JOptionPane.showMessageDialog(panel, "Please select your top three choices");
+            }
+
+
+            String uri = "mongodb+srv://sophiadronova:csce310team11@cluster0.btrged1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+            try (MongoClient mongoClient = MongoClients.create(uri)) {
+                MongoDatabase db = mongoClient.getDatabase("votingdb");
+                MongoCollection<Document> votes = db.getCollection("votes");
+
+
+                // check if voter has already voted with this id and pin
+                Document existingVote = votes.find(new Document("id", id)).first();
+
+
+                // if vote does exist, show message
+                if (existingVote != null) {
+                    JOptionPane.showMessageDialog(panel, "You have already voted");
+                    return;
+                }
+
+
+                // otherwise, insert vote into db
+                Document vote = new Document("id", id).append("pin", pin).append("firstChoice", first).append("secondChoice", second).append("thirdChoice", third);
+                votes.insertOne(vote);
+
+
+                JOptionPane.showMessageDialog(panel, "Your vote has been recorded!");
+       
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panel, "Database error: " + ex.getMessage());
+            }            
+        });
+
 
         JButton startOverButton = new JButton("Start Over");
         startOverButton.setBackground(white);

@@ -255,6 +255,7 @@ public class App {
 
             if (id.isEmpty() || pin.isEmpty() || id.equals("Enter your Voter ID") || pin.equals("Enter your Registration PIN")) {
                 JOptionPane.showMessageDialog(panel, "Please enter a valid Voter ID and PIN");
+                return;
             }
 
 
@@ -265,6 +266,7 @@ public class App {
 
             if (first.startsWith("Select") || second.startsWith("Select") || third.startsWith("Select")) {
                 JOptionPane.showMessageDialog(panel, "Please select your top three choices");
+                return;
             }
 
 
@@ -301,6 +303,21 @@ public class App {
         JButton startOverButton = new JButton("Start Over");
         startOverButton.setBackground(white);
         startOverButton.setForeground(maroon);
+        startOverButton.addActionListener(e -> {
+            pinField.setText("Enter your Registration PIN");
+            pinField.setForeground(Color.LIGHT_GRAY);
+            pinField.setEditable(false);
+
+            idField.setText("Enter your Voter ID");
+            idField.setForeground(Color.LIGHT_GRAY);
+            idField.setEditable(false);
+
+            for (JComboBox<String> box : dropdowns) {
+                box.setSelectedIndex(0);
+                box.repaint();
+            }
+        });
+
 
         buttonsPanel.add(submitVoteButton);
         buttonsPanel.add(Box.createHorizontalStrut(15));

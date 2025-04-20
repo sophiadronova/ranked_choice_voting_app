@@ -3,6 +3,10 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.FocusAdapter;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.FocusEvent;
 
 public class App {
 
@@ -75,6 +79,30 @@ public class App {
         JTextField idField = new JTextField("Enter your Voter ID");
         idField.setPreferredSize(textFieldSize);
         idField.setMaximumSize(textFieldSize);
+        idField.setForeground(Color.LIGHT_GRAY);
+        idField.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        idField.setEditable(false);
+        idField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (!idField.isEditable()) {
+                    idField.setText("");
+                    idField.setEditable(true);
+                    idField.setForeground(Color.BLACK);
+                    idField.requestFocus();
+                }
+            }
+        });
+        idField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (idField.getText().trim().isEmpty()) {
+                    idField.setText("Enter your Voter ID");
+                    idField.setForeground(Color.LIGHT_GRAY);
+                    idField.setEditable(false);
+                }
+            }            
+        });
 
         // REGISTRATION PIN INPUT
         JPanel pinPanel = createVerticalPanel();
@@ -85,6 +113,30 @@ public class App {
         JTextField pinField = new JTextField("Enter your Registration PIN");
         pinField.setPreferredSize(textFieldSize);
         pinField.setMaximumSize(textFieldSize);
+        pinField.setForeground(Color.LIGHT_GRAY);
+        pinField.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        pinField.setEditable(false);
+        pinField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (!pinField.isEditable()) {
+                    pinField.setText("");
+                    pinField.setEditable(true);
+                    pinField.setForeground(Color.BLACK);
+                    pinField.requestFocus();
+                }
+            }
+        });
+        pinField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (pinField.getText().trim().isEmpty()) {
+                    pinField.setText("Enter your Registration PIN");
+                    pinField.setForeground(Color.LIGHT_GRAY);
+                    pinField.setEditable(false);
+                }
+            }            
+        });
 
         // add components to id panel
         idPanel.add(idLabel);

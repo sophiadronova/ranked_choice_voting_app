@@ -33,6 +33,7 @@ public class App {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = createVerticalPanel();
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
 
         // TITLE
@@ -41,7 +42,9 @@ public class App {
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setForeground(maroon);
         titlePanel.add(titleLabel);
+        
         panel.add(titlePanel);
+        panel.add(Box.createVerticalStrut(15));
 
         // INPUTTING INFORMATION
         JPanel inputPanel = createHorizontalPanel();
@@ -114,6 +117,7 @@ public class App {
 
             rowPanel.add(choiceLabel);
             rowPanel.add(comboBox);
+            rowPanel.add(Box.createHorizontalStrut(10));
             panel.add(rowPanel);
         }
 
@@ -129,6 +133,7 @@ public class App {
         startOverButton.setForeground(maroon);
 
         buttonsPanel.add(submitVoteButton);
+        buttonsPanel.add(Box.createHorizontalStrut(15));
         buttonsPanel.add(startOverButton);
 
         panel.add(buttonsPanel);

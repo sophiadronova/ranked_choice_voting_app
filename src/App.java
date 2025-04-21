@@ -39,6 +39,7 @@ public class App {
         return panel;
     }
 
+
     public static void main(String[] args) {
         Color maroon = new Color(128, 0, 0);
         Color white = Color.WHITE;
@@ -318,6 +319,18 @@ public class App {
                 votes.insertOne(vote);
 
                 JOptionPane.showMessageDialog(panel, "Your vote has been recorded!");
+                pinField.setText("Enter your Registration PIN");
+                pinField.setForeground(Color.LIGHT_GRAY);
+                pinField.setEditable(false);
+    
+                idField.setText("Enter your Voter ID");
+                idField.setForeground(Color.LIGHT_GRAY);
+                idField.setEditable(false);
+    
+                for (JComboBox<String> box : dropdowns) {
+                    box.setSelectedIndex(0);
+                    box.repaint();
+                }
        
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(panel, "Database error: " + ex.getMessage());

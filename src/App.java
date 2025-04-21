@@ -14,6 +14,11 @@ import java.awt.Font;
 import java.awt.event.FocusAdapter;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.awt.event.FocusEvent;
 
 public class App {
@@ -170,7 +175,8 @@ public class App {
             "George Washington"
         };
 
-        String[] choices = {"1st Choice", "2nd Choice", "3rd Choice"};
+        String[] choices = {"1st Choice", "2nd Choice", "3rd Choice"};     
+
 
         JComboBox<String>[] dropdowns = new JComboBox[3];
         for (int i = 0; i < 3; i++) {
@@ -233,8 +239,6 @@ public class App {
                 }
             });
 
-
-
             rowPanel.add(choiceLabel);
             rowPanel.add(comboBox);
             rowPanel.add(Box.createHorizontalStrut(10));
@@ -248,37 +252,55 @@ public class App {
         submitVoteButton.setBackground(maroon);
         submitVoteButton.setForeground(white);
 
-            submitVoteButton.addActionListener(e -> {
+        submitVoteButton.addActionListener(e -> {
             String id = idField.getText().trim();
             String pin = pinField.getText().trim();
-
 
             if (id.isEmpty() || pin.isEmpty() || id.equals("Enter your Voter ID") || pin.equals("Enter your Registration PIN")) {
                 JOptionPane.showMessageDialog(panel, "Please enter a valid Voter ID and PIN");
                 return;
             }
-
-
-            String first = (String) dropdowns[0].getSelectedItem();
-            String second = (String) dropdowns[1].getSelectedItem();
-            String third = (String) dropdowns[2].getSelectedItem();
-
-
-            if (first.startsWith("Select") || second.startsWith("Select") || third.startsWith("Select")) {
-                JOptionPane.showMessageDialog(panel, "Please select your top three choices");
-                return;
+            
+            // STEP 2: BEGIN WORKING ON RANKINGS DOCUMENT
+            String[] nomineeIDs = { "n1", "n2", "n3" };
+            String[] selections = new String[3];
+            // LOOP THROUGH ALL DROP DOWNS AND ADD NAMES TO NEW SELECTIONS LIST
+            for (int i = 0; i < 3; i++) {
+                selections[i] = (String) dropdowns[i].getSelectedItem();
+                // CHECK THAT ALL CHOICES HAVE BEEN SELECTED
+                if (selections[i].startsWith("Select")) {
+                    JOptionPane.showMessageDialog(panel, "Please select all top three choices");
+                    return;
+                }
             }
+            // STEP 3: MAP CANDIDATE TO A PARTY
+            Map<String, String> partyMap = Map.of(
+                "William Henry Harrison", "Whigs",
+                "Taylor Swift", "Freedom",
+                "Abraham Lincoln", "Unity",
+                "Mr. Bean", "Comedy",
+                "George Washington", "Founders"
+            );
 
+            // STEP 4: CREATE RANKINGS DOCUMENT/ARRAY
+            List<Document> rankings = new ArrayList<>();
+            for (int i = 0; i < 3; i++) {
+                String name = selections[i];
+                String party = partyMap.getOrDefault(name, "Independent");
+        
+                rankings.add(new Document("rank", i + 1)
+                    .append("nominee", new Document("nomineeID", nomineeIDs[i])
+                    .append("name", name)
+                    .append("party", party)));
+            }            
 
             String uri = "mongodb+srv://sophiadronova:csce310team11@cluster0.btrged1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
             try (MongoClient mongoClient = MongoClients.create(uri)) {
                 MongoDatabase db = mongoClient.getDatabase("votingdb");
                 MongoCollection<Document> votes = db.getCollection("votes");
 
-
                 // check if voter has already voted with this id and pin
                 Document existingVote = votes.find(new Document("id", id)).first();
-
 
                 // if vote does exist, show message
                 if (existingVote != null) {
@@ -286,11 +308,14 @@ public class App {
                     return;
                 }
 
-
                 // otherwise, insert vote into db
-                Document vote = new Document("id", id).append("pin", pin).append("firstChoice", first).append("secondChoice", second).append("thirdChoice", third);
+                // STEP ONE: CREATE EMBEDDED DOCUMENT MODEL
+                String electionID = "2023General", electionName = "2023 General Election", electionDate = "2023-04-03T00:00:00Z";
+                Document vote = new Document("voter", new Document("voterID", id).append("regPIN", pin))
+                .append("election", new Document("electionID", electionID).append("name", electionName).append("date", electionDate))
+                .append("timestamp", Instant.now().toString())
+                .append("rankings", rankings);
                 votes.insertOne(vote);
-
 
                 JOptionPane.showMessageDialog(panel, "Your vote has been recorded!");
        

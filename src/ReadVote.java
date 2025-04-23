@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -34,7 +35,9 @@ public class ReadVote {
                     int rank = ranking.getInteger("rank");
                     String nomineeName = ranking.get("nominee", Document.class).getString("name");
                     app.dropdowns[rank - 1].setSelectedItem(nomineeName);
-                }   
+                }
+                // app.idField.setEnabled(false);
+                
                 JOptionPane.showMessageDialog(null, "Ballot retrieved successfully!");
             } else {
                 JOptionPane.showMessageDialog(app.panel, "No ballot found for this Voter ID");
@@ -43,8 +46,5 @@ public class ReadVote {
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(app.panel, "Database error: " + ex.getMessage());
         }
-
-
-
     }
 }

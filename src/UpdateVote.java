@@ -62,7 +62,5 @@ public class UpdateVote {
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(app.panel, "Database error: " + ex.getMessage());
         }
-
-        
     }
 }

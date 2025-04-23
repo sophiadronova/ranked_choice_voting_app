@@ -1,10 +1,25 @@
 import javax.swing.*;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
+import org.bson.Document;
 
 import java.awt.Color;
 import java.awt.Component;
-
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.event.FocusAdapter;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.awt.event.FocusEvent;
 
 public class App {
 
@@ -24,7 +39,11 @@ public class App {
         return panel;
     }
 
+
     public static void main(String[] args) {
+        Color maroon = new Color(128, 0, 0);
+        Color white = Color.WHITE;
+
 
         JFrame frame = new JFrame("Voting Form");
         frame.setBackground(Color.WHITE);
@@ -300,6 +319,18 @@ public class App {
                 votes.insertOne(vote);
 
                 JOptionPane.showMessageDialog(panel, "Your vote has been recorded!");
+                pinField.setText("Enter your Registration PIN");
+                pinField.setForeground(Color.LIGHT_GRAY);
+                pinField.setEditable(false);
+    
+                idField.setText("Enter your Voter ID");
+                idField.setForeground(Color.LIGHT_GRAY);
+                idField.setEditable(false);
+    
+                for (JComboBox<String> box : dropdowns) {
+                    box.setSelectedIndex(0);
+                    box.repaint();
+                }
        
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(panel, "Database error: " + ex.getMessage());

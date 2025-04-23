@@ -23,6 +23,11 @@ import java.awt.event.FocusEvent;
 
 public class App {
 
+    public JTextField idField;
+    public JTextField pinField;
+    public JPanel panel;
+    public JComboBox<String> dropdowns[];
+
     private static JPanel createHorizontalPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
@@ -41,9 +46,10 @@ public class App {
 
 
     public static void main(String[] args) {
+        App app = new App();
+
         Color maroon = new Color(128, 0, 0);
         Color white = Color.WHITE;
-
 
         JFrame frame = new JFrame("Voting Form");
         frame.setBackground(Color.WHITE);
@@ -51,6 +57,7 @@ public class App {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = createVerticalPanel();
+        app.panel = panel;
         panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
 
@@ -91,6 +98,7 @@ public class App {
         idLabel.setForeground(maroon);
 
         JTextField idField = new JTextField("Enter your Voter ID");
+        app.idField = idField;
         idField.setPreferredSize(textFieldSize);
         idField.setMaximumSize(textFieldSize);
         idField.setForeground(Color.LIGHT_GRAY);
@@ -125,6 +133,7 @@ public class App {
         pinLabel.setForeground(maroon);
 
         JTextField pinField = new JTextField("Enter your Registration PIN");
+        app.pinField = pinField;
         pinField.setPreferredSize(textFieldSize);
         pinField.setMaximumSize(textFieldSize);
         pinField.setForeground(Color.LIGHT_GRAY);
@@ -179,7 +188,9 @@ public class App {
         String[] choices = {"1st Choice", "2nd Choice", "3rd Choice"};     
 
 
-        JComboBox<String>[] dropdowns = new JComboBox[3];
+        @SuppressWarnings("unchecked")
+        JComboBox<String>[] dropdowns = (JComboBox<String>[]) new JComboBox[3];
+        app.dropdowns = dropdowns;
         for (int i = 0; i < 3; i++) {
             JPanel rowPanel = createHorizontalPanel();
 
@@ -252,91 +263,7 @@ public class App {
         JButton submitVoteButton = new JButton("Submit Vote");
         submitVoteButton.setBackground(maroon);
         submitVoteButton.setForeground(white);
-
-        submitVoteButton.addActionListener(e -> {
-            String id = idField.getText().trim();
-            String pin = pinField.getText().trim();
-
-            if (id.isEmpty() || pin.isEmpty() || id.equals("Enter your Voter ID") || pin.equals("Enter your Registration PIN")) {
-                JOptionPane.showMessageDialog(panel, "Please enter a valid Voter ID and PIN");
-                return;
-            }
-            
-            // STEP 2: BEGIN WORKING ON RANKINGS DOCUMENT
-            String[] nomineeIDs = { "n1", "n2", "n3" };
-            String[] selections = new String[3];
-            // LOOP THROUGH ALL DROP DOWNS AND ADD NAMES TO NEW SELECTIONS LIST
-            for (int i = 0; i < 3; i++) {
-                selections[i] = (String) dropdowns[i].getSelectedItem();
-                // CHECK THAT ALL CHOICES HAVE BEEN SELECTED
-                if (selections[i].startsWith("Select")) {
-                    JOptionPane.showMessageDialog(panel, "Please select all top three choices");
-                    return;
-                }
-            }
-            // STEP 3: MAP CANDIDATE TO A PARTY
-            Map<String, String> partyMap = Map.of(
-                "William Henry Harrison", "Whigs",
-                "Taylor Swift", "Freedom",
-                "Abraham Lincoln", "Unity",
-                "Mr. Bean", "Comedy",
-                "George Washington", "Founders"
-            );
-
-            // STEP 4: CREATE RANKINGS DOCUMENT/ARRAY
-            List<Document> rankings = new ArrayList<>();
-            for (int i = 0; i < 3; i++) {
-                String name = selections[i];
-                String party = partyMap.getOrDefault(name, "Independent");
-        
-                rankings.add(new Document("rank", i + 1)
-                    .append("nominee", new Document("nomineeID", nomineeIDs[i])
-                    .append("name", name)
-                    .append("party", party)));
-            }            
-
-            String uri = "mongodb+srv://sophiadronova:csce310team11@cluster0.btrged1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-            try (MongoClient mongoClient = MongoClients.create(uri)) {
-                MongoDatabase db = mongoClient.getDatabase("votingdb");
-                MongoCollection<Document> votes = db.getCollection("votes");
-
-                // check if voter has already voted with this id and pin
-                Document existingVote = votes.find(new Document("id", id)).first();
-
-                // if vote does exist, show message
-                if (existingVote != null) {
-                    JOptionPane.showMessageDialog(panel, "You have already voted");
-                    return;
-                }
-
-                // otherwise, insert vote into db
-                // STEP ONE: CREATE EMBEDDED DOCUMENT MODEL
-                String electionID = "2023General", electionName = "2023 General Election", electionDate = "2023-04-03T00:00:00Z";
-                Document vote = new Document("voter", new Document("voterID", id).append("regPIN", pin))
-                .append("election", new Document("electionID", electionID).append("name", electionName).append("date", electionDate))
-                .append("timestamp", Instant.now().toString())
-                .append("rankings", rankings);
-                votes.insertOne(vote);
-
-                JOptionPane.showMessageDialog(panel, "Your vote has been recorded!");
-                pinField.setText("Enter your Registration PIN");
-                pinField.setForeground(Color.LIGHT_GRAY);
-                pinField.setEditable(false);
-    
-                idField.setText("Enter your Voter ID");
-                idField.setForeground(Color.LIGHT_GRAY);
-                idField.setEditable(false);
-    
-                for (JComboBox<String> box : dropdowns) {
-                    box.setSelectedIndex(0);
-                    box.repaint();
-                }
-       
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panel, "Database error: " + ex.getMessage());
-            }            
-        });
-
+        submitVoteButton.addActionListener(e -> { SubmitVote.Submit(app); });
 
         JButton startOverButton = new JButton("Start Over");
         startOverButton.setBackground(white);
@@ -356,13 +283,35 @@ public class App {
             }
         });
 
-
         buttonsPanel.add(submitVoteButton);
         buttonsPanel.add(Box.createHorizontalStrut(15));
         buttonsPanel.add(startOverButton);
 
         panel.add(buttonsPanel);
 
+        // RETRIEVE, UPDATE, DELETE BUTTONS
+        JPanel retrieveAndUpdatePanel = createHorizontalPanel();
+        JButton retrieveButton = new JButton("Retreive Ballot");
+        retrieveButton.setBackground(maroon);
+        retrieveButton.setForeground(white);
+        retrieveButton.addActionListener(e -> { ReadVote.Read(app); });
+
+        JButton updateButton = new JButton("Update Ballot");
+        updateButton.setBackground(maroon);
+        updateButton.setForeground(white);
+        updateButton.addActionListener(e -> { UpdateVote.Update(app); });
+
+        JButton deleteButton = new JButton("Delete Ballot");
+        deleteButton.setBackground(maroon);
+        deleteButton.setForeground(white);
+        deleteButton.addActionListener(e -> { UpdateVote.Update(app); });
+
+        retrieveAndUpdatePanel.add(retrieveButton);
+        retrieveAndUpdatePanel.add(Box.createHorizontalStrut(15));
+        retrieveAndUpdatePanel.add(updateButton);
+        retrieveAndUpdatePanel.add(Box.createHorizontalStrut(15));
+        retrieveAndUpdatePanel.add(deleteButton);
+        panel.add(retrieveAndUpdatePanel);
 
         // SUMMARY
         JPanel summaryPanel = createVerticalPanel();

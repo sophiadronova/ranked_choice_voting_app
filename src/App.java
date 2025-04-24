@@ -17,6 +17,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.FocusEvent;
 
 public class App {
+    public JTextField idField;
+    public JTextField pinField;
+    public JPanel panel;
+    public JComboBox<String> dropdowns[];
 
     private static JPanel createHorizontalPanel() {
         JPanel panel = new JPanel();
@@ -35,18 +39,21 @@ public class App {
     }
 
     public static void main(String[] args) {
+        App app = new App();
+
         Color maroon = new Color(128, 0, 0);
         Color white = Color.WHITE;
 
-
+        // MAIN FRAME
         JFrame frame = new JFrame("Voting Form");
         frame.setBackground(Color.WHITE);
         frame.setSize(600, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        // MAIN PANEL
         JPanel panel = createVerticalPanel();
+        app.panel = panel;
         panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
 
         // TITLE
         JPanel titlePanel = createHorizontalPanel();
@@ -72,7 +79,6 @@ public class App {
         instructionsPanel.add(Box.createVerticalStrut(15));
         panel.add(instructionsPanel);
 
-
         // INPUTTING INFORMATION
         JPanel inputPanel = createHorizontalPanel();
 
@@ -85,6 +91,7 @@ public class App {
         idLabel.setForeground(maroon);
 
         JTextField idField = new JTextField("Enter your Voter ID");
+        app.idField = idField;
         idField.setPreferredSize(textFieldSize);
         idField.setMaximumSize(textFieldSize);
         idField.setForeground(Color.LIGHT_GRAY);
@@ -119,6 +126,7 @@ public class App {
         pinLabel.setForeground(maroon);
 
         JTextField pinField = new JTextField("Enter your Registration PIN");
+        app.pinField = pinField;
         pinField.setPreferredSize(textFieldSize);
         pinField.setMaximumSize(textFieldSize);
         pinField.setForeground(Color.LIGHT_GRAY);
@@ -172,7 +180,9 @@ public class App {
 
         String[] choices = {"1st Choice", "2nd Choice", "3rd Choice"};
 
-        JComboBox<String>[] dropdowns = new JComboBox[3];
+        @SuppressWarnings("unchecked")
+        JComboBox<String>[] dropdowns = (JComboBox<String>[]) new JComboBox[3];
+        app.dropdowns = dropdowns;
         for (int i = 0; i < 3; i++) {
             JPanel rowPanel = createHorizontalPanel();
 
@@ -233,14 +243,11 @@ public class App {
                 }
             });
 
-
-
             rowPanel.add(choiceLabel);
             rowPanel.add(comboBox);
             rowPanel.add(Box.createHorizontalStrut(10));
             panel.add(rowPanel);
         }
-
 
         // BUTTONS
         JPanel buttonsPanel = createHorizontalPanel();
@@ -248,57 +255,7 @@ public class App {
         submitVoteButton.setBackground(maroon);
         submitVoteButton.setForeground(white);
 
-            submitVoteButton.addActionListener(e -> {
-            String id = idField.getText().trim();
-            String pin = pinField.getText().trim();
-
-
-            if (id.isEmpty() || pin.isEmpty() || id.equals("Enter your Voter ID") || pin.equals("Enter your Registration PIN")) {
-                JOptionPane.showMessageDialog(panel, "Please enter a valid Voter ID and PIN");
-                return;
-            }
-
-
-            String first = (String) dropdowns[0].getSelectedItem();
-            String second = (String) dropdowns[1].getSelectedItem();
-            String third = (String) dropdowns[2].getSelectedItem();
-
-
-            if (first.startsWith("Select") || second.startsWith("Select") || third.startsWith("Select")) {
-                JOptionPane.showMessageDialog(panel, "Please select your top three choices");
-                return;
-            }
-
-
-            String uri = "mongodb+srv://sophiadronova:csce310team11@cluster0.btrged1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-            try (MongoClient mongoClient = MongoClients.create(uri)) {
-                MongoDatabase db = mongoClient.getDatabase("votingdb");
-                MongoCollection<Document> votes = db.getCollection("votes");
-
-
-                // check if voter has already voted with this id and pin
-                Document existingVote = votes.find(new Document("id", id)).first();
-
-
-                // if vote does exist, show message
-                if (existingVote != null) {
-                    JOptionPane.showMessageDialog(panel, "You have already voted");
-                    return;
-                }
-
-
-                // otherwise, insert vote into db
-                Document vote = new Document("id", id).append("pin", pin).append("firstChoice", first).append("secondChoice", second).append("thirdChoice", third);
-                votes.insertOne(vote);
-
-
-                JOptionPane.showMessageDialog(panel, "Your vote has been recorded!");
-       
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panel, "Database error: " + ex.getMessage());
-            }            
-        });
-
+        submitVoteButton.addActionListener(e -> { SubmitVote.Submit(app); });
 
         JButton startOverButton = new JButton("Start Over");
         startOverButton.setBackground(white);
@@ -318,13 +275,13 @@ public class App {
             }
         });
 
-
         buttonsPanel.add(submitVoteButton);
         buttonsPanel.add(Box.createHorizontalStrut(15));
         buttonsPanel.add(startOverButton);
 
         panel.add(buttonsPanel);
 
+        // NEW PANEL FOR RETRIEVE, UPDATE, AND DELETE BUTTONS
 
         // SUMMARY
         JPanel summaryPanel = createVerticalPanel();

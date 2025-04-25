@@ -29,7 +29,7 @@ public class ReadVote {
             MongoCollection<Document> votes = db.getCollection("votes");
 
             // check if voter has already voted with this id and pin
-            Document existingVote = votes.find(new Document("id", id)).first();
+            Document existingVote = votes.find(new Document("voter.voterID", id)).first();
 
             // if vote does exist, show message
             if (existingVote != null) {

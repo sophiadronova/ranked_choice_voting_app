@@ -275,6 +275,28 @@ public class App {
         panel.add(buttonsPanel);
 
         // NEW PANEL FOR RETRIEVE, UPDATE, AND DELETE BUTTONS
+        JPanel retrieveUpdateDeletePanel = createHorizontalPanel();
+        JButton retrieveButton = new JButton("Retrieve Vote");
+        retrieveButton.setBackground(white);
+        retrieveButton.setForeground(maroon);
+        retrieveButton.addActionListener(e-> {ReadVote.Read(app);});
+
+        JButton updateButton = new JButton("Update Vote");
+        updateButton.setBackground(white);
+        updateButton.setForeground(maroon);
+
+        JButton deleteButton = new JButton("Delete Vote");
+        deleteButton.setBackground(white);
+        deleteButton.setForeground(maroon);
+
+        retrieveUpdateDeletePanel.add(retrieveButton);
+        retrieveUpdateDeletePanel.add(Box.createHorizontalStrut(15));
+        retrieveUpdateDeletePanel.add(updateButton);
+        retrieveUpdateDeletePanel.add(Box.createHorizontalStrut(15));
+        retrieveUpdateDeletePanel.add(deleteButton);
+
+        panel.add(retrieveUpdateDeletePanel);
+
 
         // SUMMARY
         JPanel summaryPanel = createVerticalPanel();

@@ -38,7 +38,6 @@ public class ReadVote {
 
                 @SuppressWarnings("unchecked")
                 List<Document> rankings = (List<Document>) existingVote.get("rankings");
-
                 for (Document ranking : rankings){
                     int rank = ranking.getInteger("rank");
                     String nomineeName = ranking.get("nominee", Document.class).getString("name");

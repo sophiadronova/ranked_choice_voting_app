@@ -46,8 +46,10 @@ public class SubmitVote {
         for (int i = 0; i < 3; i++) {
             String name = choices[i];
             String party = partyNameMap.get(name);
-
-            rankings.add(new Document("rank", i + 1).append("nominee", new Document("nomineeID", nomineeIDs[i]).append("party", party)));
+            rankings.add(new Document("rank", i + 1)
+            .append("nominee", new Document("nomineeID", nomineeIDs[i])
+            .append("name", choices[i].toString())
+            .append("party", party)));
         }
 
 

@@ -289,6 +289,7 @@ public class App {
         JButton deleteButton = new JButton("Delete Vote");
         deleteButton.setBackground(white);
         deleteButton.setForeground(maroon);
+        deleteButton.addActionListener(e-> {DeleteVote.Delete(app);});
 
         retrieveUpdateDeletePanel.add(retrieveButton);
         retrieveUpdateDeletePanel.add(Box.createHorizontalStrut(15));

@@ -13,19 +13,18 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Updates;
 
 public class UpdateVote {
-    public static Document getNomineeInfo(Document existingVote, String nomineeName) {
-        @SuppressWarnings("unchecked") 
+    public static Document getNomineeInfo(Document existingVote, String nomineeName){
+        @SuppressWarnings("unchecked")
         List<Document> rankings = (List<Document>) existingVote.get("rankings");
         for (Document ranking : rankings){
             Document nominee = ranking.get("nominee", Document.class);
-            String nomineeString = nominee.getString("name");
-            if (nomineeString != null && nomineeString.trim().equalsIgnoreCase(nomineeName.trim())) {
+            if (nominee.getString("name").equals(nomineeName)){
                 return nominee;
             }
         }
         return new Document("nomineeID", "")
                     .append("name", nomineeName)
-                    .append("party", "");        
+                    .append("party", "");
     }
 
     public static void Update(App app)  {
@@ -60,7 +59,7 @@ public class UpdateVote {
                 votes.updateOne(new Document("voter.voterID", id), updates);
                 
 
-                JOptionPane.showMessageDialog(null, "Ballot Updated Successfully!");
+                JOptionPane.showMessageDialog(null, "Ballot Retrieved Successfully!");
             }
             else {
                 JOptionPane.showMessageDialog(null, "No ballot found for this Voter ID");

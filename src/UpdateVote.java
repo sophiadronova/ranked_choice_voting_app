@@ -1,32 +1,17 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JOptionPane;
 
 import org.bson.Document;
-import org.bson.conversions.Bson;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Updates;
 
 public class UpdateVote {
-    public static Document getNomineeInfo(Document existingVote, String nomineeName){
-        @SuppressWarnings("unchecked")
-        List<Document> rankings = (List<Document>) existingVote.get("rankings");
-        for (Document ranking : rankings){
-            Document nominee = ranking.get("nominee", Document.class);
-            if (nominee.getString("name").equals(nomineeName)){
-                return nominee;
-            }
-        }
-        return new Document("nomineeID", "")
-                    .append("name", nomineeName)
-                    .append("party", "");
-    }
-
     public static void Update(App app)  {
         String id = app.idField.getText().trim();
 
@@ -46,20 +31,35 @@ public class UpdateVote {
             // if vote does exist, show message
             if (existingVote != null) {
 
-                @SuppressWarnings("unchecked")
+                Map<String, String> partyNameMap = Map.of(
+                    "Taylor Swift", "Freedom",
+                    "Mr. Bean", "Comedy",
+                    "George Washington", "President",
+                    "Abraham Lincoln", "President",
+                    "William Henry Harrison", "Freedom"
+                );
+
                 List<Document> updatedRankings = new ArrayList<>();
                 for (int i = 0; i < 3; i++){
                     String nomineeName = (String) app.dropdowns[i].getSelectedItem();
-                    Document nomineeInfo = getNomineeInfo(existingVote, nomineeName);
+
+                    if (nomineeName == null || nomineeName.startsWith("Select")) {
+                        JOptionPane.showMessageDialog(app.panel, "Please select a valid candidate for all ranks.");
+                        return;                        
+                    }
+                    String party = partyNameMap.get(nomineeName);
+                    String nomineeID = "n" + (i + 1);
+                    Document nomineeInfo = new Document("nomineeID", nomineeID)
+                    .append("name", nomineeName)
+                    .append("party", party);
+                   
                     Document ranking = new Document("rank", i + 1).append("nominee", nomineeInfo);
                     updatedRankings.add(ranking);
                 }
 
-                Bson updates = Updates.set("rankings", updatedRankings);
-                votes.updateOne(new Document("voter.voterID", id), updates);
+                votes.updateOne(new Document("voter.voterID", id), new Document("$set", new Document("rankings", updatedRankings)));
                 
-
-                JOptionPane.showMessageDialog(null, "Ballot Retrieved Successfully!");
+                JOptionPane.showMessageDialog(null, "Ballot Updated Successfully!");
             }
             else {
                 JOptionPane.showMessageDialog(null, "No ballot found for this Voter ID");

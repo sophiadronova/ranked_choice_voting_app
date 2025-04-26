@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -10,6 +11,18 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 public class UpdateVote {
+    public static Document getNomineeInfo(Document existingVote, String nomineeName){
+        List<Document> rankings = (List<Document>) existingVote.get("rankings");
+        for (Document ranking : rankings){
+            Document nominee = ranking.get("nominee", Document.class);
+            if (nominee.getString("name").equals(nomineeName)){
+                return nominee;
+            }
+        }
+
+        
+    }
+
     public static void Update(App app)  {
         String id = app.idField.getText().trim();
 
@@ -28,16 +41,19 @@ public class UpdateVote {
 
             // if vote does exist, show message
             if (existingVote != null) {
-                String regPIN = existingVote.get("voter", Document.class).getString("regPIN");
-                app.pinField.setText(regPIN);
 
                 @SuppressWarnings("unchecked")
-                List<Document> rankings = (List<Document>) existingVote.get("rankings");
-                for (Document ranking : rankings){
-                    int rank = ranking.getInteger("rank");
-                    String nomineeName = ranking.get("nominee", Document.class).getString("name");
-                    app.dropdowns[rank - 1].setSelectedItem(nomineeName);
+                List<Document> updatedRankings = new ArrayList<>();
+                for (int i = 0; i < 3; i++){
+                    String nomineeName = (String) app.dropdowns[i].getSelectedItem();
+                    Document nomineeInfo = getNomineeInfo(existingVote, nomineeName);
+                    Document ranking = new Document("rank", i + 1).append("nominee", nomineeInfo);
+                    updatedRankings.add(ranking);
                 }
+
+                Bson updates = Updates.set("rankings", updatedRankings);
+                votes.updateOne(new Document("voter.voterID", id), updates);
+                
 
                 JOptionPane.showMessageDialog(null, "Ballot Retrieved Successfully!");
             }

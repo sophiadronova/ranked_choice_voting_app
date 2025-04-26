@@ -284,6 +284,7 @@ public class App {
         JButton updateButton = new JButton("Update Vote");
         updateButton.setBackground(white);
         updateButton.setForeground(maroon);
+        updateButton.addActionListener(e-> {UpdateVote.Update(app);});
 
         JButton deleteButton = new JButton("Delete Vote");
         deleteButton.setBackground(white);
